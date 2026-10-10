@@ -89,7 +89,7 @@ type tcase struct {
 	// only that list: the bodies of the applied writes are still compared.
 	requests string
 	// refused means the new program rejects the invocation before any
-	// request (C9, C12): it must make no request and apply no write.
+	// request (C12): it must make no request and apply no write.
 	refused bool
 	// clock marks a case whose program derives dates or timestamps from the
 	// wall clock: today's and yesterday's UTC dates, and timestamps on them,
@@ -191,9 +191,7 @@ var cases = []tcase{
 	{name: "temp", args: []string{"temp", "20"}},
 	{name: "temp-fahrenheit-user", args: []string{"temp", "68F", "--target-user-id", "u2"}},
 	{name: "temp-negative-dashdash", args: []string{"temp", "--side", "right", "--", "-40"}},
-	{name: "temp-negative", args: []string{"temp", "-40", "--side", "right"}, exit: 2, refused: true,
-		change:   "a negative level needs -- before it (temp --side right -- -40): the toolkit's parser reads -40 as flags",
-		newError: `unknown flag -4, did you mean one of "-h", "-j", "-y", "-v"?`},
+	{name: "temp-negative", args: []string{"temp", "-40", "--side", "right"}},
 	{name: "alarm-create", args: []string{"alarm", "create", "--time", "07:30", "--days", "1,2,3"}},
 	{name: "alarm-create-full", args: []string{"alarm", "create", "--time", "06:00", "--days", "0", "--disabled", "--no-vibration", "--sound", "chime"}},
 	{name: "alarm-update", args: []string{"alarm", "update", "a1", "--enabled=false", "--time", "06:45"}},

@@ -245,13 +245,12 @@ all of them to match, except where a case documents a change.
 in each: the Eight Sleep hosts read `EIGHTSLEEP_COMPAT_BASE`.
 
 Result on the rewrite: 138 of 138 pass. 20 cases expect a family exit code
-instead of the old 1 or 0 (C1) and still compare everything else. 19 carry a
+instead of the old 1 or 0 (C1) and still compare everything else. 18 carry a
 documented difference: 9 compare the exit code, requests and write bodies but
 not the output (version string, parse-error text, the alarm table's sound
-column, `--fields`, the dry-run fallback text), and 10 skip the requests: 6
-validate before reading credentials (C12), and `alarm dismiss-all` (C11),
-`temp -40` (C9), and the script's `alarm list` and `whoami` (C15) use
-another route.
+column, `--fields`, the dry-run fallback text), and 9 skip the requests: 6
+validate before reading credentials (C12), and `alarm dismiss-all` (C11) and
+the script's `alarm list` and `whoami` (C15) use another route.
 
 ## Escape Hatches
 
@@ -274,16 +273,15 @@ Found here, general to any tool, not worked around by bypassing toolkit:
 
 | # | Gap | Effect here |
 | --- | --- | --- |
-| G1 | kong scans a positional that starts with `-` and a digit as short flags. Repro: an operation with input `Value string \`json:"value" arg:""\``, CLI `temp`; `tool temp -40` fails with `unknown flag -4`. kong's `passthrough` does not help: it splits `-40` into `-4` and a stray `0` | `temp -40` needs `temp -- -40` (C9). Fix belongs in toolkit, for example treating a negative number as a positional when the leaf still has an unfilled positional |
+| G1 | kong scanned a positional that starts with `-` and a digit as short flags, so `tool temp -40` failed with `unknown flag -4`. Fixed in toolkit v0.1.11, which marks negative-number arguments before parsing | none since toolkit v0.1.11. `temp -40` and separate-form negative flag values parse as in `eightctl` |
 | G2 | The CLI rebuilds the input by marshalling the parsed struct to JSON and decoding it over `NewInput()`, so a field with `omitempty` and a kong `default` loses an explicit zero: `--enabled=false` with `default:"true"` arrives as `true`, `--level 0` with `default:"50"` as `50`. HTTP and MCP are unaffected | `autopilot ... --enabled` and `audio volume --level` use pointer fields with the default applied in the handler. Caught by conformance; the goldens prove the old bodies |
 | G3 | Render hooks cannot see the toolkit's `--fields`, so a tool cannot honour it in human output | `--fields` no longer filters `--output table/csv/json` (C4) |
 
-Because kong treats separate-form values beginning with `-` as flags, these
-new invocations are rejected with exit 2: `base angle --head -10`, `audio seek
---position -1`, `audio volume --level -5`, and `alarm create --sound -x`.
-Use equals form (`--head=-10`, `--position=-1`, `--level=-5`, `--sound=-x`)
-when a negative value or dash-prefixed string is required. No inventoried caller
-uses these forms.
+Since toolkit v0.1.11 a negative number parses as a value or positional
+(`temp -40`, `base angle --head -10`, `audio volume --level -5`). A
+separate-form value that starts with `-` and is not a number, such as
+`alarm create --sound -x`, is still read as a flag and rejected with exit 2;
+use the equals form (`--sound=-x`). No inventoried caller uses that form.
 
 ## Intentional Changes
 
@@ -300,14 +298,14 @@ unchanged and covered by the caller test.
 | C6 | Env and config-file defaults for command flags (for example `EIGHTCTL_TIME` or a `days:` key for `alarm create`), an accident of viper's global binding, are ignored. Root settings keep their env and config keys | flags belong to their command | none |
 | C7 | New operations `alarm active` and `presence detail` (from `eightsleepctl`), `presence check` as the explicit spelling of `presence`, and the toolkit's `serve`, `mcp` and `metadata`. HTTP and MCP apply writes only with `"apply": true`, deletes only with `"confirm": true`, and `serve` refuses applied writes by default | absorbing the script, fleet design | additive |
 | C8 | Help and usage are kong's and name the program `eightsleep`, also when run as `eightctl`. `version` and `--version` print the release tag (or `dev`) instead of `0.2.8-0xble.0.1.0` | toolkit CLI, rename | none |
-| C9 | A negative level needs `--`: `temp --side right -- -40`. `temp -40` is a usage error (exit 2) | G1 | none found. The README example changed |
+| C9 | Withdrawn in toolkit v0.1.11: `temp -40 --side right` sets level -40 as `eightctl` did. `temp --side right -- -40` also works | G1 (fixed) | none |
 | C10 | `alarm list` prints a set sound's ID in the table; `eightctl` printed a Go pointer address | the address was never meaningful | none |
 | C11 | `alarm dismiss-all` sends `PUT` to the app API route the script verified (it advertises `Allow: PUT`), and on 404 or 405 dismisses each active alarm. `eightctl` sent `POST` to the client API. With `--json` it prints the script's `{ok, method[, dismissed_alarm_ids]}`; human output is still empty | the script's verified route. Not re-checked live | none |
 | C12 | Input validation (missing `--time`, `--track`, `--trip`, empty updates, bad dates, `--from`/`--to` order) runs before credentials are checked, so these fail with exit 2 even without credentials | no request should be needed to reject bad input | none |
 | C13 | `logout --json` prints `{"cleared": true}` | toolkit `--json` | additive |
 | C14 | `~/.config/eightsleep/config.yaml` and `config.yml` are read when present, and `EIGHTSLEEP_*` variables win over `EIGHTCTL_*` | the rename | additive |
 | C15 | `eightsleepctl` equivalents differ where the table above says: `alarm list` rows instead of raw alarms, `whoami` makes no token request when a user ID is configured and then omits `token_expires_at`, expiries end in `Z` instead of `+00:00`, the dry-run `fallback` names the per-alarm route the fallback really uses, `client_id`/`client_secret` default to the public app client, the script's own token cache is not read, and failures use the family exit codes | one implementation per command | none: no caller of the script was found |
-| C16 | Separate-form negative values and dash-prefixed strings are rejected by kong (`base angle --head -10`, `audio seek --position -1`, `audio volume --level -5`, `alarm create --sound -x`); use `--flag=value` instead | toolkit parser (G1) | none found |
+| C16 | A separate-form value that starts with `-` and is not a number is rejected by kong (`alarm create --sound -x`); use `--flag=value` instead. Negative numbers (`base angle --head -10`, `audio seek --position -1`, `audio volume --level -5`) parse as in `eightctl` since toolkit v0.1.11 | toolkit parser | none found |
 | C17 | `--both` is a leaf flag: `away on --both` works, while the old persistent form `away --both on` exits 2 | toolkit parser | none found |
 | C18 | Cobra's `help <cmd>` and `completion <shell>` commands are not exposed; both exit 2. Use `<cmd> --help` for command help | toolkit CLI | none found |
 
