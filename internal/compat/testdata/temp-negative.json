@@ -65,6 +65,5 @@
         "currentLevel": -40
       }
     }
-  ],
-  "change": "a negative level needs -- before it (temp --side right -- -40): the toolkit's parser reads -40 as flags"
+  ]
 }

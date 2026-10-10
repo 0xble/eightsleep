@@ -34,13 +34,12 @@ export EIGHTCTL_PASSWORD="your-password"
 
 eightsleep status
 eightsleep temp 20
-eightsleep temp --side right -- -40
+eightsleep temp -40 --side right
 eightsleep off
 ```
 
 `status`, `on`, `off` and `temp` act on every discovered household side unless
-you select one with `--side left|right|solo` or `--target-user-id <id>`. A
-negative level needs `--` before it, so the parser does not read it as flags.
+you select one with `--side left|right|solo` or `--target-user-id <id>`.
 
 ## Commands
 

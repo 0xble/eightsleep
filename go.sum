@@ -1,5 +1,5 @@
-github.com/0xble/toolkit v0.1.9 h1:sqhHpRvI8hz/T6pQaliqEBZf2B96UCG6YOcpsAzXH7c=
-github.com/0xble/toolkit v0.1.9/go.mod h1:ZS+T1t2kSJYKBpa87L5A4VRXQZMhg6fF6hI4kGYhxdA=
+github.com/0xble/toolkit v0.1.11 h1:edaPkeW68EU/5KX5AtFsWIDOCxA2VTms1s1BlIQH1/4=
+github.com/0xble/toolkit v0.1.11/go.mod h1:ZS+T1t2kSJYKBpa87L5A4VRXQZMhg6fF6hI4kGYhxdA=
 github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 h1:/vQbFIOMbk2FiG/kXiLl8BRyzTWDw7gX/Hz7Dd5eDMs=
 github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4/go.mod h1:hN7oaIRCjzsZ2dE+yG5k+rsdt3qcwykqK6HVGcKwsw4=
 github.com/99designs/keyring v1.2.2 h1:pZd3neh/EmUzWONb35LxQfvuY7kiSXAq3HQd97+XBn0=
