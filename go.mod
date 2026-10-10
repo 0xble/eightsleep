@@ -3,7 +3,7 @@ module github.com/0xble/eightsleep
 go 1.26.9
 
 require (
-	github.com/0xble/toolkit v0.1.9
+	github.com/0xble/toolkit v0.1.11
 	github.com/99designs/keyring v1.2.2
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	go.yaml.in/yaml/v3 v3.0.5
