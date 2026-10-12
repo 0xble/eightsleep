@@ -52,6 +52,13 @@ func env(extra map[string]string) func(string) string {
 
 func newFixture(t testing.TB) *fixture {
 	t.Helper()
+	// A later fake can reuse an earlier fake's port and thus its token-cache
+	// identity. Isolate persistent credentials per fixture, not just per process.
+	home := t.TempDir()
+	for k, v := range map[string]string{"HOME": home, "XDG_CONFIG_HOME": home + "/.config", "XDG_STATE_HOME": home + "/.local/state",
+		"XDG_CACHE_HOME": home + "/.cache", "XDG_DATA_HOME": home + "/.local/share"} {
+		t.Setenv(k, v)
+	}
 	fake := eightfake.New()
 	t.Cleanup(fake.Close)
 	fake.Now = func() time.Time { return clock }

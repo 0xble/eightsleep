@@ -52,6 +52,30 @@ func TestMissingCredentialsFailWithoutRequests(t *testing.T) {
 	}
 }
 
+func TestFixturesDoNotShareCachedCredentials(t *testing.T) {
+	first := newFixture(t)
+	if code, _, stderr := first.run(t, "--agent", "status"); code != 0 {
+		t.Fatalf("authenticate first fixture: exit %d: %s", code, stderr)
+	}
+	cl := client.New("ada@example.invalid", "", "", "", "")
+	cl.UseHosts(first.fake.Hosts())
+	if _, err := tokencache.Load(cl.Identity()); err != nil {
+		t.Fatalf("first fixture did not cache its login: %v", err)
+	}
+
+	second := newFixture(t)
+	// Reuse the endpoint identity deterministically instead of waiting for the
+	// OS to give a later fake the same ephemeral port during a soak run.
+	second.b.Hosts = first.b.Hosts
+	second.b.Getenv = env(map[string]string{"EIGHTCTL_EMAIL": "", "EIGHTCTL_PASSWORD": ""})
+	before := len(first.fake.Recorded())
+	code, _, stderr := second.run(t, "--agent", "status")
+	requests := len(first.fake.Recorded()) - before + len(second.fake.Recorded())
+	if code != 5 || !strings.Contains(stderr, `"auth_required"`) || requests != 0 {
+		t.Fatalf("exit %d, %d requests: %s", code, requests, stderr)
+	}
+}
+
 func TestAmbiguousCachedAccountsAreRefused(t *testing.T) {
 	f := newFixture(t)
 	f.b.Getenv = env(map[string]string{"EIGHTCTL_EMAIL": "", "EIGHTCTL_PASSWORD": ""})
