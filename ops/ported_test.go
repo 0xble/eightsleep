@@ -222,9 +222,8 @@ func TestLogoutClearsTheCachedToken(t *testing.T) {
 }
 
 func TestReadsInAFreshHomeCreateNothing(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
 	f := newFixture(t)
+	home := f.home
 	f.b.Getenv = env(map[string]string{"EIGHTCTL_EMAIL": "", "EIGHTCTL_PASSWORD": ""})
 	f.run(t, "on", "--dry-run")
 	f.run(t, "logout")

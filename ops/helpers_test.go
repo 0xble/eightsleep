@@ -39,6 +39,7 @@ type fixture struct {
 	fake *eightfake.Server
 	b    *ops.Backend
 	reg  *op.Registry
+	home string
 }
 
 // env is the environment the backend sees: credentials only.
@@ -54,6 +55,8 @@ func newFixture(t testing.TB) *fixture {
 	t.Helper()
 	// A later fake can reuse an earlier fake's port and thus its token-cache
 	// identity. Isolate persistent credentials per fixture, not just per process.
+	// t.Setenv makes fixtures incompatible with t.Parallel, and HOME follows
+	// the most recent fixture; tests that inspect HOME must use f.home.
 	home := t.TempDir()
 	for k, v := range map[string]string{"HOME": home, "XDG_CONFIG_HOME": home + "/.config", "XDG_STATE_HOME": home + "/.local/state",
 		"XDG_CACHE_HOME": home + "/.cache", "XDG_DATA_HOME": home + "/.local/share"} {
@@ -65,7 +68,7 @@ func newFixture(t testing.TB) *fixture {
 	hosts := fake.Hosts()
 	b := &ops.Backend{Globals: &ops.Globals{}, Hosts: &hosts, Getenv: env(nil), Stderr: &bytes.Buffer{},
 		Now: func() time.Time { return clock }, LocalZone: func() string { return "America/Los_Angeles" }, Version: "v0.0.0-test"}
-	return &fixture{fake: fake, b: b, reg: ops.New("v0.0.0-test", b)}
+	return &fixture{fake: fake, b: b, reg: ops.New("v0.0.0-test", b), home: home}
 }
 
 // run runs the CLI in-process and returns the exit code, stdout and stderr.
