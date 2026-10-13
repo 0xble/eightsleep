@@ -7,8 +7,12 @@ Entries before the rename are the history of the `0xble/eightctl` fork of
 
 ## [Unreleased]
 
+## 0.3.1 - 2026-10-13
+
 ### Changed
 
+- Requires Go 1.26.9, which fixes GO-2026-6617, GO-2026-6613 and GO-2026-6612
+  in `net/http`.
 - Built on toolkit v0.1.11. A negative number is accepted again without `--`:
   `eightsleep temp -40 --side right`, `base angle --head -10`, `audio seek
   --position -1` and `audio volume --level -5` work as they did in `eightctl`.
